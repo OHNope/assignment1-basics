@@ -3,6 +3,22 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+AGENTS.md
+# VSCode
+.vscode
+
+scripts/
+logs/
+experiments/
+checkpoints/
+
+# Data
+/data
+/artifacts
+
+# Profiling
+pyinstrument-pytest.html
+
 # C extensions
 *.so
 

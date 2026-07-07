@@ -4,6 +4,10 @@ from collections import Counter
 import numpy as np
 import pytest
 
+from cs336_basics.BPE import BYTE_TOKENS
+from cs336_basics.Prepare import encode_dataset
+from cs336_basics.Tokenizer import Tokenizer
+
 from .adapters import run_get_batch
 
 
@@ -70,3 +74,32 @@ def test_get_batch():
             device="cuda:99",
         )
         assert "CUDA error" in str(excinfo.value) or "Torch not compiled with CUDA enabled" in str(excinfo.value)
+
+
+def test_parallel_encode_dataset_matches_single_worker(tmp_path):
+    input_path = tmp_path / "input.txt"
+    single_output_path = tmp_path / "single.npy"
+    parallel_output_path = tmp_path / "parallel.npy"
+    input_path.write_text("hello world\nhello<|endoftext|>\nbye world\n", encoding="utf-8")
+
+    vocab = {token_id: token for token_id, token in enumerate(BYTE_TOKENS)}
+    tokenizer = Tokenizer(vocab, [], special_tokens=["<|endoftext|>"])
+
+    single_count, single_dtype = encode_dataset(
+        input_path,
+        single_output_path,
+        tokenizer,
+        chunk_size=3,
+        num_workers=1,
+    )
+    parallel_count, parallel_dtype = encode_dataset(
+        input_path,
+        parallel_output_path,
+        tokenizer,
+        chunk_size=3,
+        num_workers=4,
+    )
+
+    assert single_count == parallel_count
+    assert single_dtype == parallel_dtype
+    np.testing.assert_array_equal(np.load(single_output_path), np.load(parallel_output_path))

@@ -119,3 +119,16 @@ def test_checkpointing(tmp_path):
         )
     # compare the optimizer state dicts
     assert are_optimizers_equal(original_optimizer_state, new_optimizer_state)
+
+
+def test_normalize_compiled_model_state_dict_prefix():
+    from cs336_basics.Train import normalize_model_state_dict
+
+    state_dict = {
+        "_orig_mod.fc1.weight": torch.ones(1),
+        "_orig_mod.fc1.bias": torch.zeros(1),
+    }
+
+    normalized = normalize_model_state_dict(state_dict)
+
+    assert set(normalized) == {"fc1.weight", "fc1.bias"}
