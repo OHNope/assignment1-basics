@@ -1,138 +1,134 @@
-# CS336 Spring 2025 Assignment 1: Basics
+# CS336 Assignment 1: Basics
 
-For a full description of the assignment, see the assignment handout at
-[cs336_assignment1_basics.pdf](./cs336_assignment1_basics.pdf)
+This repository contains my implementation of the CS336 Assignment 1 basics stack:
+BPE tokenizer training, Transformer language model components, AdamW training, checkpointing,
+and TinyStories experiments.
 
-If you see any issues with the assignment handout or code, please feel free to
-raise a GitHub issue or open a pull request with a fix.
+The original course handout is kept at [cs336_assignment1_basics.pdf](./cs336_assignment1_basics.pdf).
 
-## Setup
+## What is implemented
 
-### Environment
-We manage our environments with `uv` to ensure reproducibility, portability, and ease of use.
-Install `uv` [here](https://github.com/astral-sh/uv#installation) (recommended), or run `pip install uv`/`brew install uv`.
-We recommend reading a bit about managing projects in `uv` [here](https://docs.astral.sh/uv/guides/projects/#managing-dependencies) (you will not regret it!).
+- Byte-pair encoding tokenizer training and serialization.
+- Transformer LM modules: embeddings, linear layers, RMSNorm, RoPE, attention, SwiGLU, and full model.
+- Training loop with checkpoint resume, cosine learning-rate schedule, gradient clipping, and CSV metrics.
+- CUDA speed path for TinyStories: bf16 autocast, TF32, fused AdamW, scaled-dot-product attention, and optional `torch.compile`.
+- Text generation from trained checkpoints with temperature and top-p sampling.
 
-You can now run any code in the repo using
-```sh
-uv run <python_file_path>
+## TinyStories setup
+
+The local experiment used a 10k-token BPE vocabulary and encoded TinyStories arrays:
+
+| Item | Value |
+| --- | --- |
+| Vocabulary size | 10,000 |
+| Context length | 256 |
+| Model width | 512 |
+| Layers | 4 |
+| Heads | 16 |
+| FFN dimension | 1,344 |
+| Training data | TinyStories train, encoded to `.npy` locally |
+| Validation data | TinyStories valid, encoded to `.npy` locally |
+| Device | `cuda:0` |
+
+Large local artifacts such as `.npy` datasets and `.pt` checkpoints are intentionally not committed.
+The committed experiment files are only the lightweight configs, CSV metrics, and SVG loss curves used below.
+
+## Experiment results
+
+| Run | Steps covered | Batch size | LR | Final train loss | Final val loss | Elapsed | Throughput |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `tinystories_fast_iter_20260705_125652` | 100 to 10,000 | 32 | 1e-3 | 3.826 | 3.767 | 19.0 min | 71.9k tok/s |
+| `tinystories_fast_ft_12k_20260705_134613` | 2,050 to 12,000 | 32 | 3e-3 | 3.415 | 3.361 | 14.9 min | 110.3k tok/s |
+
+The second run resumed from `checkpoints/tinystories_baseline.pt` and continued the same model with a higher
+learning rate and smaller minimum LR. It reached the best recorded validation loss in this local run set.
+
+### Experiment metadata
+
+| Run | Started at | Resume source | Max iters | Warmup | Min LR | Log every | Eval every | Val iters | Speed options | Files |
+| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |
+| `tinystories_fast_iter_20260705_125652` | 2026-07-05 12:56:59 | fresh run | 10,000 | 100 | 1e-4 | 100 | 1,000 | 3 | bf16, fused AdamW, `torch.compile`, SDPA, TF32 | [config](./experiments/tinystories_fast_iter_20260705_125652/config.json), [metrics](./experiments/tinystories_fast_iter_20260705_125652/metrics.csv) |
+| `tinystories_fast_ft_12k_20260705_134613` | 2026-07-05 13:46:19 | `checkpoints/tinystories_baseline.pt` | 12,000 | 100 | 3e-5 | 50 | 500 | 5 | bf16, fused AdamW, `torch.compile`, SDPA, TF32 | [config](./experiments/tinystories_fast_ft_12k_20260705_134613/config.json), [metrics](./experiments/tinystories_fast_ft_12k_20260705_134613/metrics.csv) |
+
+The aggregate local experiment index is committed at [experiments/experiment_log.csv](./experiments/experiment_log.csv).
+Dates above are the local timestamps written by the training script on TSUBAME.
+
+### Loss curves
+
+Training and validation loss by step:
+
+![Fine-tune loss by step](./experiments/tinystories_fast_ft_12k_20260705_134613/loss_curves_steps.svg)
+
+Training and validation loss by wall-clock time:
+
+![Fine-tune loss by time](./experiments/tinystories_fast_ft_12k_20260705_134613/loss_curves_time.svg)
+
+For comparison, the 10k fast iteration run:
+
+![Fast iteration loss by step](./experiments/tinystories_fast_iter_20260705_125652/loss_curves_steps.svg)
+
+## Sample generations
+
+Generated from `checkpoints/tinystories_baseline.pt` with `temperature=0.8`, `top_p=0.9`.
+
+Prompt:
+
+```text
+Once upon a time, there was a little girl named Lily
 ```
-and the environment will be automatically solved and activated when necessary.
 
-### Run unit tests
+Output excerpt:
 
+```text
+Once upon a time, there was a little girl named Lily. Lucy loved to play with his friend. One day, Spot saw a big forest with her room to look. One saw a big bird with her mom. She was happy to play with her mom.
+One sunny day, Bob saw a big box. She wanted to take and play. She tried to make her mom. She looked everywhere his big, "Why are you?" Her mom said, "Don't worry, but only to see the toy food."
+The bird was surprised, and they became good friends.
+```
+
+Prompt:
+
+```text
+Tom found a shiny red ball in the garden
+```
+
+Output excerpt:
+
+```text
+Tom found a shiny red ball in the garden. He said, "I'm a toy!" So, Tim and Sam laughed and said, "Yes, Tim! You are so tasty."
+Tom and his mom watched his friends. They saw the ball and watched. They had fun and played until they could play. Tim said, "Let, Tim! Let's play together!"
+Tim and Sam became friends.
+```
+
+The samples show that the model learned TinyStories-like structure, names, simple dialogue, and short narrative arcs,
+but grammar and entity consistency are still weak at this small scale.
+
+## Reproduce
+
+Install and run tests:
 
 ```sh
 uv run pytest
 ```
 
-Initially, all tests should fail with `NotImplementedError`s.
-To connect your implementation to the tests, complete the
-functions in [./tests/adapters.py](./tests/adapters.py).
-
-### Download data
-Download the TinyStories data and a subsample of OpenWebText
-
-``` sh
-mkdir -p data
-cd data
-
-wget https://huggingface.co/datasets/roneneldan/TinyStories/resolve/main/TinyStoriesV2-GPT4-train.txt
-wget https://huggingface.co/datasets/roneneldan/TinyStories/resolve/main/TinyStoriesV2-GPT4-valid.txt
-
-wget https://huggingface.co/datasets/stanford-cs336/owt-sample/resolve/main/owt_train.txt.gz
-gunzip owt_train.txt.gz
-wget https://huggingface.co/datasets/stanford-cs336/owt-sample/resolve/main/owt_valid.txt.gz
-gunzip owt_valid.txt.gz
-
-cd ..
-```
-
-## TSUBAME training quick reference
-
-Work from the on-demand desktop, not the login node:
-
-```sh
-cd /work/7/uw07387/CS336/assignment1-basics
-```
-
-Fast TinyStories iteration run:
+Run a fast TinyStories experiment on CUDA:
 
 ```sh
 ./scripts/train_tinystories_fast_iter.sh
 ```
 
-The training code enables the current speed path by default on CUDA:
-
-- bf16 autocast on supported GPUs
-- TF32 matmul/cuDNN
-- PyTorch fused AdamW
-- `torch.compile`
-- fused scaled-dot-product attention
-
-At startup it prints a line like:
-
-```text
-speed options: bf16=True, optimizer=AdamW, compiled=True, sdpa=True, tf32=True
-```
-
-To run a new experiment after one fast run finishes, use a new `RUN_NAME`.
-Use a new `CHECKPOINT_PATH` if you want a separate checkpoint instead of
-continuing from the existing baseline checkpoint.
-
-Continue from the existing checkpoint with changed runtime parameters:
+Generate from a trained local checkpoint:
 
 ```sh
-RUN_NAME=tinystories_fast_bs64_$(date +%Y%m%d_%H%M%S) \
-BATCH_SIZE=64 \
-MAX_ITERS=12000 \
-LOG_EVERY=20 \
-EVAL_EVERY=200 \
-VAL_ITERS=5 \
-./scripts/train_tinystories_fast_iter.sh
+uv run python -m cs336_basics.Generate \
+  --checkpoint checkpoints/tinystories_baseline.pt \
+  --vocab artifacts/tinystories_vocab_10k.json \
+  --merges artifacts/tinystories_merges_10k.json \
+  --prompt "Once upon a time" \
+  --max-new-tokens 120 \
+  --temperature 0.8 \
+  --top-p 0.9 \
+  --device cuda:0 \
+  --no-compile-model
 ```
 
-Start a separate new run from iteration 0:
-
-```sh
-RUN_NAME=tinystories_new_bs64_$(date +%Y%m%d_%H%M%S) \
-CHECKPOINT_PATH=checkpoints/tinystories_new_bs64.pt \
-BATCH_SIZE=64 \
-MAX_ITERS=5000 \
-./scripts/train_tinystories_fast_iter.sh
-```
-
-If a checkpoint already exists at `CHECKPOINT_PATH`, the script resumes it. If
-the path does not exist, the script starts from scratch and writes a new
-checkpoint there.
-
-Safe parameters to change while resuming the same model:
-
-```text
-BATCH_SIZE
-MAX_ITERS
-LOG_EVERY
-EVAL_EVERY
-VAL_ITERS
-CHECKPOINT_EVERY
-RUN_NAME
-```
-
-Model-shape parameters must match the checkpoint:
-
-```text
-vocab_size
-context_length
-d_model
-num_layers
-num_heads
-d_ff
-rope_theta
-```
-
-To avoid `torch.compile` startup or memory overhead for a debugging run, pass
-`--no-compile-model` in a manual `python -m cs336_basics.Train ...` command, or
-remove `--compile-model` from the shell script temporarily.
-
-More detailed TSUBAME notes live in
-`cs336_basics/TSUBAME_TRAINING_GUIDE.md`.
+Detailed TSUBAME notes are in [cs336_basics/TSUBAME_TRAINING_GUIDE.md](./cs336_basics/TSUBAME_TRAINING_GUIDE.md).

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520">
+<rect width="100%" height="100%" fill="white"/>
+<line x1="80" y1="40" x2="80" y2="450" stroke="#111827"/>
+<line x1="80" y1="450" x2="870" y2="450" stroke="#111827"/>
+<text x="450.0" y="500" text-anchor="middle" font-family="sans-serif" font-size="16">Wall-clock time (seconds)</text>
+<text x="20" y="260.0" text-anchor="middle" transform="rotate(-90 20 260.0)" font-family="sans-serif" font-size="16">Loss</text>
+<text x="80" y="24" font-family="sans-serif" font-size="18" font-weight="bold">Loss curves</text>
+<text x="80.0" y="474" text-anchor="middle" font-family="sans-serif" font-size="12">32</text>
+<text x="70" y="44.0" text-anchor="end" font-family="sans-serif" font-size="12">48.1</text>
+<text x="238.0" y="474" text-anchor="middle" font-family="sans-serif" font-size="12">254</text>
+<text x="70" y="126.0" text-anchor="end" font-family="sans-serif" font-size="12">39.2</text>
+<text x="396.0" y="474" text-anchor="middle" font-family="sans-serif" font-size="12">475</text>
+<text x="70" y="208.0" text-anchor="end" font-family="sans-serif" font-size="12">30.3</text>
+<text x="554.0" y="474" text-anchor="middle" font-family="sans-serif" font-size="12">697</text>
+<text x="70" y="290.0" text-anchor="end" font-family="sans-serif" font-size="12">21.4</text>
+<text x="712.0" y="474" text-anchor="middle" font-family="sans-serif" font-size="12">918</text>
+<text x="70" y="372.0" text-anchor="end" font-family="sans-serif" font-size="12">12.5</text>
+<text x="870.0" y="474" text-anchor="middle" font-family="sans-serif" font-size="12">1140</text>
+<text x="70" y="454.0" text-anchor="end" font-family="sans-serif" font-size="12">3.62</text>
+<polyline points="80.0,40.0 91.5,429.1 101.1,435.5 110.1,436.0 119.4,438.8 127.8,439.7 136.1,441.0 143.6,441.5 150.6,441.8 158.4,441.9 165.2,442.7 171.9,441.7 178.1,443.2 184.8,444.5 199.3,444.6 210.9,443.5 220.3,443.3 229.6,444.3 238.3,444.9 247.4,444.0 256.6,445.3 265.5,443.4 274.1,443.6 282.1,444.8 288.9,446.0 296.1,446.3 303.4,446.8 311.6,445.7 318.8,445.8 326.0,446.4 333.4,446.9 340.5,446.6 347.3,447.0 354.2,447.2 360.8,445.9 367.5,445.7 373.9,446.7 380.7,445.9 387.9,446.3 394.9,445.8 401.5,445.0 407.9,446.7 414.2,446.8 421.8,446.7 431.3,445.9 439.6,446.4 447.9,448.0 457.5,445.2 468.1,445.6 480.0,447.9 490.6,447.5 499.8,446.2 507.8,447.3 515.4,447.4 523.4,448.5 531.6,447.1 539.7,446.4 547.6,447.1 554.8,447.5 561.7,447.4 568.4,447.3 574.8,448.5 581.2,448.4 587.8,448.1 594.1,447.6 600.4,447.5 606.8,447.3 613.6,448.3 620.5,448.7 627.4,448.8 634.6,447.0 641.8,448.3 650.4,448.1 659.1,449.1 668.2,448.8 676.3,448.3 683.8,447.5 690.8,449.3 697.5,450.0 704.5,447.6 711.8,448.1 718.5,447.6 725.4,448.3 733.8,448.8 745.7,448.7 755.8,448.4 765.1,447.1 773.6,448.3 782.1,448.2 790.1,449.2 798.4,448.9 805.7,448.1 812.8,448.5 820.3,446.8 827.9,448.6 836.1,449.1 844.1,447.9 853.2,447.7 861.5,448.0 870.0,448.1" fill="none" stroke="#2563eb" stroke-width="2"/>
+<polyline points="158.4,442.5 247.4,445.0 326.0,445.4 394.9,446.8 480.0,447.2 561.7,446.7 627.4,448.6 704.5,447.9 790.1,448.2 870.0,448.6" fill="none" stroke="#dc2626" stroke-width="2"/>
+<line x1="690" y1="24" x2="720" y2="24" stroke="#2563eb" stroke-width="3"/>
+<text x="728" y="29" font-family="sans-serif" font-size="13">train</text>
+<line x1="790" y1="24" x2="820" y2="24" stroke="#dc2626" stroke-width="3"/>
+<text x="828" y="29" font-family="sans-serif" font-size="13">validation</text>
+</svg>
